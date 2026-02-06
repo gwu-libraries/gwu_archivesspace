@@ -1,0 +1,8 @@
+en:
+  welcome:
+    heading: ""
+    message: ""
+    message_logged_in: "Your friendly archives management tool."
+
+  navbar:
+    brand: "George Washington University"

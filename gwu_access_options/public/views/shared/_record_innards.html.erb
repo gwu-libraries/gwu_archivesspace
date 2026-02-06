@@ -1,0 +1,102 @@
+<%# 1. INITIAL SETUP %>
+<% non_folder = %w(summary langmaterial accessrestrict userestrict bioghist) %>
+<% folder = %w(abstract arrangement phystech physloc otherfindaid custodhist acqinfo appraisal accruals originalsloc altformavail extent relatedmaterial separatedmaterial note_bibliography materialspec physdesc inscription physfacet dimensions edition fileplan legalstatus odd note processinfo note_index) %>
+
+<div class="upper-record-details">
+    <% over = @result.note('scopecontent') %>
+    <% if over.blank?
+        over = @result.note('abstract')
+        folder.shift 
+    end %>
+    <% unless over.blank? %>
+      <%= render partial: 'shared/single_note', locals: {:type => 'abstract', :note_struct => over, :calling_partial => 'record_innards'} %>
+    <% end %>
+
+    <% unless @result.dates.blank? %>
+      <h2><%= t('resource._public.dates') %></h2>
+      <%= render partial: 'shared/dates', locals: {:dates => @result.dates} %>
+    <% end %>
+
+    <% if @result.agents && Array(@result.agents['creator']).length > 0 %>
+      <%= render partial: 'shared/agents_list', locals: {:list => {'creator' => @result.agents['creator']}, :heading_size => 'h2'} %>
+    <% end %>
+
+    <% non_folder.each do |type| %>
+      <% (@result.notes[type] || []).each do |note_struct| %>
+       <% unless note_struct['note_text'].blank? %>
+         <%= render partial: 'shared/single_note', locals: {:type => type, :note_struct => note_struct, :calling_partial => 'record_innards'} %>
+       <% end %>
+      <% end %>
+    <% end %>
+
+    <% unless @result.extents.blank? %>
+      <% @result.extents.each do |ext| %>
+        <h2><%= ext['portion'] == 'whole' ? t('resource._public.extent_full') : t('resource._public.extent_partial') %></h2>
+        <p class="extent"><%= inheritance(ext['_inherited']).html_safe %> <%= ext['display'] %></p>
+      <% end %>
+    <% end %>
+
+    <% unless @result.notes.include?('langmaterial') || @result.lang_materials.blank? %>
+      <h2><%= t('resource._public.lang') %></h2>
+       <% @result.lang_materials.each do |lang_material| %>
+         <p class="language"><%= inheritance(lang_material['_inherited']).html_safe %> <%= t('enumerations.language_iso639_2.' + lang_material['language'])%></p>
+       <% end %>
+    <% end %>
+
+    <%= render partial: 'shared/metadata_rights_declarations', locals: {:result => @result} %>
+</div>
+
+<div class="acc_holder clear-both">
+  <div id="res_accordion" class="accordion">
+    
+    <%# 1. Additional Description %>
+    <% x = render partial: 'shared/multi_notes', locals: {:types => folder} %>
+    <% unless x.blank? %>
+      <%= render partial: 'shared/accordion_panel', locals: {:p_title => t('resource._public.additional'), :p_id => 'add_desc', :p_body => x } %>
+    <% end %>
+
+    <%# 2. GWU Access & Request %>
+    <% if @result.is_a?(ArchivalObject) %>
+      <%= render partial: 'shared/access_options', locals: {:result => @result, :dig => @dig, :record_title => strip_tags(@result.display_string)} %>
+    <% end %>
+
+    <%# 3. Digital Objects %>
+    <% unless @result.linked_digital_objects.blank? %>
+        <% x = render partial: 'resources/linked_digital_objects', locals: {:digital_objects => @result.linked_digital_objects} %>
+        <%= render partial: 'shared/accordion_panel', locals: {:p_title => t('linked_digital_objects'), :p_id => 'linked_digital_objects_list', :p_body => x} %>
+    <% end %>
+
+    <%# 4. Agents & Subjects %>
+    <% unless @result.agents.blank? %>
+      <% x= render partial: 'shared/agents_list', locals: {:list => @result.agents.except("creator")} %>
+      <%= render partial: 'shared/accordion_panel', locals: {:p_title => t('pui_agent.related'), :p_id => 'agent_list', :p_body => x} %>
+    <% end %>
+    <% unless @result.subjects.blank? %>
+      <% x= render partial: 'shared/subjects_list', locals: {:list => @result.subjects} %>
+      <%= render partial: 'shared/accordion_panel', locals: {:p_title => t('subject._plural'), :p_id => 'subj_list', :p_body => x} %>
+    <% end %>
+
+    <%# 5. Deaccessions %>
+    <% if (@result.kind_of?(Accession) || @result.kind_of?(Resource)) && !@result.deaccessions.blank? %>
+      <% x = render partial: 'shared/present_list', locals: {:list => @result.deaccessions.collect{|d| d.fetch('description')}, :list_clss => 'deaccessions'} %>
+      <%= render partial: 'shared/accordion_panel', locals: {:p_title => t('deaccessions'), :p_id => 'deaccessions_list', :p_body => x} %>
+    <% end %>
+
+    <%# 6. Containers %>
+    <% unless @result.container_titles_and_uris.blank? %>
+       <% x = render partial: 'shared/present_list', locals: {:list => @result.container_titles_and_uris, :list_clss => 'top_containers'} %>
+       <%= render partial: 'shared/accordion_panel', locals: {:p_title => t('containers'), :p_id => 'cont_list', :p_body => x} %>
+    <% end %>
+
+    <%# 7. Repository Card %>
+    <% unless @repo_info.blank? || @repo_info['top']['name'].blank? %>
+      <% x = render partial: 'repositories/repository_details' %>
+      <%= render partial: 'shared/accordion_panel', locals: {:p_title => t('repository.details'), :p_id => 'repo_details', :p_body => x} %>
+    <% end %>
+
+  </div> <%# end #res_accordion %>
+</div> <%# end .acc_holder %>
+
+<script type="text/javascript" >
+  initialize_accordion(".note_panel", "<%= t('accordion.expand') %>" , "<%= t('accordion.collapse') %>", <%= AppConfig[:pui_expand_all] %>);
+</script>

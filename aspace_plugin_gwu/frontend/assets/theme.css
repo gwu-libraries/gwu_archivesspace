@@ -1,0 +1,23 @@
+body {
+  background:  repeat top left;
+  background-size: contain;
+}
+
+header img {
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+header + .content-pane { margin-top: ; }
+
+header { background-color: #004065 }
+
+/* remove staff ui inset appearance of header */
+body > div.container-fluid:first-child {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+header img {
+  margin-left: 2rem;
+}

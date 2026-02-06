@@ -1,0 +1,38 @@
+en:
+  'Browse:': 'Browse'
+  Home: 'Home'
+
+  brand:
+    title: "George Washington University"
+    welcome_head: "Archival Collection Guides"
+    welcome_message: "<p>Use this database to search across the collection guides (or finding aids) for the <a href='https://library.gwu.edu/specialized-archival-and-international-materials'>specialized collections</a> of the GW Libraries.</p><p>Collections described in this database are open to the GW community and the public.<p><p><a href='https://library.gwu.edu/use-collections'>Visiting the Special Collections Research Center</a><p><a href='https://library.gwu.edu/visiting-grc'>Visiting the Global Resources Center</a>"
+    welcome_search_label: "Search The Archives"
+
+  repository:
+    _plural: "Repositories"
+
+  resource:
+    _plural: "Collections"
+
+  digital_object:
+    _plural: "Digital Objects"
+
+  accession:
+    _plural: "Accessions"
+
+  subject:
+    _plural: "Subjects"
+
+  agent:
+    _singular: "Names"
+    _plural: "Names"
+
+  pui_agent:
+    _plural: "Names"
+    _singular: "Names"
+
+  classification:
+    _plural: "Classifications"
+
+  unprocessed:
+    "Accessions"

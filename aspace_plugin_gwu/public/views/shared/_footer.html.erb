@@ -1,0 +1,26 @@
+<!-- V4 Footer -->
+
+<%= render "shared/above_footer_content" %>
+
+<div class="container-fluid footer">
+  <div class="row">
+    <div class="col-md-6 text-left">
+
+          <ul class="address">
+            <li>George Washington University</li>
+            <li></li>
+            <li></li>
+
+            <li></li>
+          </ul>
+
+     </div>
+     <div class="col-md-6 text-right">
+        <p> <a href="<%= AppConfig[:frontend_proxy_url] %>">Staff Interface</a> |  <a href="http://archivesspace.org">ArchivesSpace.org</a> | Hosted by <a href="http://www.lyrasis.org/">Lyrasis</a> <img src="<%= AppConfig[:public_proxy_prefix] %>assets/lyrasis_star.png" alt="Lyrasis Logo"/></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- footer_extra_content (i.e. below_footer_content) -->
+<%= render "shared/footer_extra_content" %>

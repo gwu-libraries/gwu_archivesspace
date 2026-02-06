@@ -1,0 +1,30 @@
+en:
+  gwu_custom:
+    panel_title: "Access & Request Options"
+    facilitate_label: "Request this Item:"
+    visit_label: "Visit In-Person:"
+    visit_text_preview: "Review our policies and guidelines before your visit."
+    visit_link_text: "Review Visiting Guidelines"
+    copyright_link_text: "Reproductions, Citations, and Copyright"
+    copyright_url: "https://library.gwu.edu/reproductions-citations-copyright"
+    request_btn_text: "Send %{repo} a Message to Request"
+    consult_title: "Talk to an Archivist"
+    consult_text: "Have a question or need help with your research? We are happy to assist you."
+    message_btn_text: "Send a Message"
+    schedule_btn_text: "Schedule Appointment"
+    request_label: "Provide the following information:"
+    request_default: "Consult Staff for assistance on this item."
+    status:
+      online: "Available Online | Access digital content via the 'Go to file' link or thumbnail image above."
+      restricted: "Digital Access Request Required | Digital content for this item is not available online. Please contact the repository to inquire about access possibilities."
+      default: "Research Access | Please contact the repository to arrange access to this item."
+    repos:
+      grc:
+        name: "GRC"
+        visit_url: "https://library.gwu.edu/visiting-grc"
+        contact_url: "https://library.gwu.edu/visiting-grc"
+      scrc:
+        name: "SCRC"
+        visit_url: "https://library.gwu.edu/use-collections"
+        contact_url: "https://library.gwu.edu/form/contact-special-collections-rese"
+        calendly_url: "https://calendly.com/scrc"

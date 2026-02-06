@@ -1,0 +1,13 @@
+<div class="container-fluid footer">
+  <div class="row">
+    <div class="col-md-12">
+      <p><% if AppConfig[:enable_public] %><a href="<%= AppConfig[:public_proxy_url] %>">Public site</a> | <% end %><a href="http://wiki.archivesspace.org">Resources</a> | <a href="https://archivesspace.atlassian.net/jira/software/c/projects/ANW/issues/">Issue Tracker</a> | <a href="https://lyrasis.zendesk.com/hc">Lyrasis support</a> <img src="<%= AppConfig[:frontend_proxy_prefix] %>assets/lyrasis_star.png" /></p>
+    </div>
+  </div>
+  <script type="text/javascript">
+    // make the frontend ui fluid to display better and use more real estate on larger screens
+    ['.global-header', '.navbar-branding', 'header + div'].forEach(function(selector) {
+      $(selector).removeClass('container').addClass('container-fluid');
+    });
+  </script>
+</div>
