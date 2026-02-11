@@ -26,11 +26,10 @@
 
 <%# 2. HTML CONTENT %>
 <% gwu_body = capture do %>
-  <div class="access-options-content" style="padding: 15px; border-left: 6px solid #AA9868; margin: -15px;">
-    <div style="padding: 15px;">
+  <div class="access-options-container">
+    <div class="access-options-inner">
       
-      <div class="alert <%= has_online_content ? 'alert-info' : 'alert-warning' %>" 
-           style="margin-bottom: 20px; border-radius: 0; border-left: 5px solid; <%= has_online_content ? '' : 'color: #664d03; background-color: #fff3cd; border-color: #ffeeba;' %>">
+      <div class="alert access-alert <%= has_online_content ? 'alert-info' : 'access-alert-warning' %>">
         <% if has_online_content %> 
           <i class="fa fa-cloud-download"></i> <%= t('gwu_custom.status.online') %>
         <% elsif dig.present? %> 
@@ -41,15 +40,11 @@
       </div>
 
       <div class="row">
-        <%# Col 1: Request & Concatenated Clipboard %>
         <div class="col-md-4">
-          <h3 style="margin-top: 0; font-size: 1.1em; font-weight: bold;"><%= t('gwu_custom.facilitate_label') %></h3>
-          <div class="well well-sm" style="background: #f8f9fa; border: 1px solid #ddd; border-radius: 0; box-shadow: none; margin-bottom: 10px; position: relative;">
-            
-            <%# Visible Text %>
+          <h3 class="access-title"><%= t('gwu_custom.facilitate_label') %></h3>
+          <div class="access-well">
             <span id="visible-barcode-text"><%= container_info.presence || t('gwu_custom.request_default') %></span>
             
-            <%# Hidden Data for Clipboard concatenation %>
             <div id="clipboard-payload" style="display:none;">
 Title: <%= record_title %>
 Container: <%= container_info %>
@@ -57,7 +52,7 @@ URL: <%= full_url %>
             </div>
 
             <% if container_info.present? %>
-              <button type="button" id="copy-btn" class="btn btn-xs btn-default pull-right" title="Copy full details to clipboard" style="border: none; background: transparent;">
+              <button type="button" id="copy-btn" class="btn btn-xs btn-default pull-right" title="Copy full details" style="border:none; background:transparent;">
                 <i class="fa fa-copy"></i>
               </button>
             <% end %>
@@ -65,73 +60,32 @@ URL: <%= full_url %>
           <div id="copy-success" style="display:none; color: #28a745; font-size: 0.8em; margin-bottom: 5px;">
             <i class="fa fa-check"></i> Copied full details!
           </div>
-          
-          <a href="<%= cfg[:contact_url] %>" class="btn btn-sm btn-primary" style="width: 100%; text-transform: uppercase;">
+          <a href="<%= cfg[:contact_url] %>" class="btn btn-sm btn-primary access-btn-full">
             <%= t('gwu_custom.request_btn_text', repo: cfg[:name]) %>
           </a>
         </div>
 
-        <%# Col 2: Visit %>
-        <div class="col-md-4" style="border-left: 1px solid #eee;">
-          <h3 style="margin-top: 0; font-size: 1.1em; font-weight: bold;"><%= t('gwu_custom.visit_label') %></h3>
-          <p style="font-size: 0.9em; min-height: 40px;"><%= t('gwu_custom.visit_text_preview') %></p>
-          
-          <a href="<%= cfg[:visit_url] %>" target="_blank" class="btn btn-sm btn-default" style="width: 100%; margin-bottom: 8px; text-align: left;">
-            <i class="fa fa-external-link" style="width: 20px;"></i> <%= t('gwu_custom.visit_link_text') %>
+        <div class="col-md-4 access-col-divider">
+          <h3 class="access-title"><%= t('gwu_custom.visit_label') %></h3>
+          <p class="access-text-small"><%= t('gwu_custom.visit_text_preview') %></p>
+          <a href="<%= cfg[:visit_url] %>" target="_blank" class="btn btn-sm btn-default access-btn-left">
+            <i class="fa fa-external-link"></i> <%= t('gwu_custom.visit_link_text') %>
           </a>
-          
-          <a href="<%= t('gwu_custom.copyright_url') %>" target="_blank" class="btn btn-sm btn-default" style="width: 100%; text-align: left;">
-            <i class="fa fa-external-link" style="width: 20px;"></i> <%= t('gwu_custom.copyright_link_text') %>
+          <a href="<%= t('gwu_custom.copyright_url') %>" target="_blank" class="btn btn-sm btn-default access-btn-left">
+            <i class="fa fa-external-link"></i> <%= t('gwu_custom.copyright_link_text') %>
           </a>
         </div>
 
-        <%# Col 3: Consultation %>
-        <div class="col-md-4" style="border-left: 1px solid #eee;">
-          <h3 style="margin-top: 0; font-size: 1.1em; font-weight: bold;"><%= t('gwu_custom.consult_title') %></h3>
-          <p style="font-size: 0.9em; min-height: 40px;"><%= t('gwu_custom.consult_text') %></p>
-          <div class="consultation-actions">
-            <a href="<%= cfg[:contact_url] %>" class="btn btn-sm btn-default" style="width: 100%; margin-bottom: 8px; text-align: left;">
-              <i class="fa fa-envelope-o" style="width: 20px;"></i> <%= t('gwu_custom.message_btn_text') %>
-            </a>
-            <% if cfg[:calendly_url].present? %>
-              <a href="<%= cfg[:calendly_url] %>" target="_blank" class="btn btn-sm btn-default" style="width: 100%; text-align: left;">
-                <i class="fa fa-calendar" style="width: 20px;"></i> <%= t('gwu_custom.schedule_btn_text') %>
-              </a>
-            <% end %>
-          </div>
+        <div class="col-md-4 access-col-divider">
+          <h3 class="access-title"><%= t('gwu_custom.consult_title') %></h3>
+          <p class="access-text-small"><%= t('gwu_custom.consult_text') %></p>
+          <a href="<%= cfg[:contact_url] %>" class="btn btn-sm btn-default access-btn-left">
+            <i class="fa fa-envelope-o"></i> <%= t('gwu_custom.message_btn_text') %>
+          </a>
         </div>
       </div>
     </div>
   </div>
-
-  <script type="text/javascript">
-    (function() {
-      var btn = document.getElementById('copy-btn');
-      var payload = document.getElementById('clipboard-payload');
-      if (btn && payload) {
-        btn.addEventListener('click', function() {
-          var textToCopy = payload.innerText.trim();
-          if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(textToCopy).then(showSuccess);
-          } else {
-            var textArea = document.createElement("textarea");
-            textArea.value = textToCopy;
-            document.body.appendChild(textArea);
-            textArea.select();
-            try { document.execCommand('copy'); showSuccess(); } catch (err) {}
-            document.body.removeChild(textArea);
-          }
-        });
-      }
-      function showSuccess() {
-        var msg = document.getElementById("copy-success");
-        if (msg) {
-          msg.style.display = "inline";
-          setTimeout(function() { msg.style.display = "none"; }, 2000);
-        }
-      }
-    })();
-  </script>
 <% end %>
 
 <%= render partial: 'shared/accordion_panel', locals: { :p_title => t('gwu_custom.panel_title'), :p_id => 'access_options_list', :p_body => gwu_body } %>
