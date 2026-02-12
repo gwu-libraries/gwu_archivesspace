@@ -5,6 +5,8 @@
   repo_key = is_grc ? 'grc' : 'scrc'
   cfg = t("gwu_custom.repos.#{repo_key}", default: {})
   
+  item_ref_id = result.json['ref_id'] || "N/A"
+
   container_info = ""
   if result.json['instances']
     instance = result.json['instances'].find {|inst| inst['sub_container'].present? }
@@ -19,7 +21,6 @@
 
   has_online_content = result.json['representative_file_version'].present? || (dig.present? && dig.any? { |d| d['out'].present? })
   
-  # construct the full URL without double slashes for clipboard
   base_url = AppConfig[:public_proxy_url].to_s.chomp('/')
   full_url = "#{base_url}#{result.uri}"
 %>
@@ -29,6 +30,7 @@
   <div class="access-options-container">
     <div class="access-options-inner">
       
+      <%# Status Alert Area %>
       <div class="alert access-alert <%= has_online_content ? 'alert-info' : 'access-alert-warning' %>">
         <% if has_online_content %> 
           <i class="fa fa-cloud-download"></i> <%= t('gwu_custom.status.online') %>
@@ -39,32 +41,43 @@
         <% end %>
       </div>
 
+      <%# Start of the Row for Columns %>
       <div class="row">
+        
+        <%# Column 1: Facilitate/Request %>
         <div class="col-md-4">
           <h3 class="access-title"><%= t('gwu_custom.facilitate_label') %></h3>
           <div class="access-well">
-            <span id="visible-barcode-text"><%= container_info.presence || t('gwu_custom.request_default') %></span>
+            <span id="visible-barcode-text">
+              <% if container_info.present? %>
+                <%= container_info %>
+              <% else %>
+                <%= item_ref_id %>
+              <% end %>
+            </span>
             
-            <div id="clipboard-payload" style="display:none;">
+            <div id="request-payload" style="display:none;">
+              Ref ID: <%= item_ref_id %>
               Title: <%= record_title %>
-              Container: <%= container_info %>
+              Container: <%= container_info.presence || "Digital/No Physical Container" %>
               URL: <%= full_url %>
             </div>
 
-            <% if container_info.present? %>
-              <button type="button" id="copy-btn" class="btn btn-xs btn-default pull-right" title="Copy full details" style="border:none; background:transparent;">
-                <i class="fa fa-copy"></i>
-              </button>
-            <% end %>
+            <button type="button" id="copy-btn" class="btn btn-xs btn-default pull-right" title="Copy full details" style="border:none; background:transparent;">
+              <i class="fa fa-copy"></i>
+            </button>
           </div>
+          
           <div id="copy-success" style="display:none; color: #28a745; font-size: 0.8em; margin-bottom: 5px;">
             <i class="fa fa-check"></i> Copied full details!
           </div>
+          
           <a href="<%= cfg[:contact_url] %>" class="btn btn-sm btn-primary access-btn-full">
             <%= t('gwu_custom.request_btn_text', repo: cfg[:name]) %>
           </a>
         </div>
 
+        <%# Column 2: Visit %>
         <div class="col-md-4 access-col-divider">
           <h3 class="access-title"><%= t('gwu_custom.visit_label') %></h3>
           <p class="access-text-small"><%= t('gwu_custom.visit_text_preview') %></p>
@@ -76,6 +89,7 @@
           </a>
         </div>
 
+        <%# Column 3: Consult %>
         <div class="col-md-4 access-col-divider">
           <h3 class="access-title"><%= t('gwu_custom.consult_title') %></h3>
           <p class="access-text-small"><%= t('gwu_custom.consult_text') %></p>
@@ -83,9 +97,10 @@
             <i class="fa fa-envelope-o"></i> <%= t('gwu_custom.message_btn_text') %>
           </a>
         </div>
-      </div>
-    </div>
-  </div>
+
+      </div> <%# End Row %>
+    </div> <%# End Inner %>
+  </div> <%# End Container %>
 <% end %>
 
 <%= render partial: 'shared/accordion_panel', locals: { :p_title => t('gwu_custom.panel_title'), :p_id => 'access_options_list', :p_body => gwu_body } %>
