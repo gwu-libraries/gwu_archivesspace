@@ -38,10 +38,15 @@
     border: 1px solid #ddd; 
     border-radius: 0; 
     box-shadow: none; 
-    margin-bottom: 10px; 
+    margin-bottom: 0.2rem; 
     position: relative;
     padding: 10px;
 }
+
+#copy-success {
+  height: 1.2rem;
+}
+
 .access-btn-full {
     width: 100%; 
     text-transform: uppercase;

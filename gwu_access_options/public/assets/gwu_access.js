@@ -18,6 +18,9 @@ $(function () {
 
   function showSuccess() {
     const $msg = $("#copy-success");
+    $msg.text("Copied full text to clipboard!");
     $msg.fadeIn().delay(2500).fadeOut();
+    $msg.text("");
+    $('.access-well #copy-btn > i').removeClass('fa-copy').addClass('fa-check');
   }
 });
