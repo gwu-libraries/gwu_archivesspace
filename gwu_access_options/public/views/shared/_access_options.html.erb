@@ -48,19 +48,11 @@
         <div class="col-md-4">
           <h3 class="access-title"><%= t('gwu_custom.facilitate_label') %></h3>
           <div class="access-well">
-            <span id="visible-barcode-text">
-              <% if container_info.present? %>
-                <%= container_info %>
-              <% else %>
-                <%= item_ref_id %>
-              <% end %>
+            <input type="text" id="visible-barcode-text" value="Ref ID: <%= item_ref_id %>, Title: <%= record_title %>, Container: <%= container_info.presence || 'Digital/No Physical Container' %>, URL: <%= full_url %>">
             </span>
             
             <div id="request-payload" style="display:none;">
-              Ref ID: <%= item_ref_id %>
-              Title: <%= record_title %>
-              Container: <%= container_info.presence || "Digital/No Physical Container" %>
-              URL: <%= full_url %>
+              Ref ID: <%= item_ref_id %>, Title: <%= record_title %>, Container: <%= container_info.presence || "Digital/No Physical Container" %>, URL: <%= full_url %>
             </div>
 
             <button type="button" id="copy-btn" class="btn btn-xs btn-default pull-right" title="Copy full details" style="border:none; background:transparent;">

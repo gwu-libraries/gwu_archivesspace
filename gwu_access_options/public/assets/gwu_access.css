@@ -34,6 +34,7 @@
     min-height: 40px;
 }
 .access-well {
+    display: flex;
     background: #f8f9fa; 
     border: 1px solid #ddd; 
     border-radius: 0; 
@@ -41,7 +42,34 @@
     margin-bottom: 10px; 
     position: relative;
     padding: 10px;
+
+    #visible-barcode-text {
+      flex: 1;
+      border: none;
+      background-color: transparent;
+      font-size: 0.9rem;
+      color: #7b7b7b;
+
+      &:focus-visible {
+        outline: none;
+      }
+    }
+
+    > button#copy-btn {
+      padding-inline: 0.4rem 0.2rem;
+
+      &:focus {
+        box-shadow: none;
+      }
+    }
 }
+
+#copy-success {
+  position: absolute;
+  top: 0;
+  right: 15px;
+}
+
 .access-btn-full {
     width: 100%; 
     text-transform: uppercase;
@@ -51,3 +79,4 @@
     margin-bottom: 8px; 
     text-align: left;
 }
+
