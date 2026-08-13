@@ -56,7 +56,16 @@
     <% end %>
 
     <%# 2. GWU Access & Request %>
-    <% if @result.is_a?(ArchivalObject) %>
+    <% 
+      # Fetch allowed levels list from YAML (defaults to item and file)
+      raw_levels = t('gwu_custom.allowed_levels', default: ['item', 'file'])
+      allowed_levels = Array(raw_levels).map(&:to_s).map(&:downcase)
+      item_level = (@result.level || @result.json['level']).to_s.downcase
+      
+      show_access_options = @result.is_a?(ArchivalObject) && allowed_levels.include?(item_level)
+    %>
+
+    <% if show_access_options %>
       <%= render partial: 'shared/access_options', locals: {:result => @result, :dig => @dig, :record_title => strip_tags(@result.display_string)} %>
     <% end %>
 

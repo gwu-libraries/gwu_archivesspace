@@ -1,5 +1,9 @@
 en:
   gwu_custom:
+  # Levels of description allowed to show the request panel (e.g., item, file, series)
+    allowed_levels:
+      - item
+      - file
     panel_title: "Access & Request Options"
     facilitate_label: "Request this Item:"
     visit_label: "Visit In-Person:"
