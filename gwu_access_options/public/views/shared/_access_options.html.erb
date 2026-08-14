@@ -1,5 +1,6 @@
 <%# 1. LOGIC BLOCK %>
 <% 
+  dig = local_assigns[:dig] || []
   item_uri = result.uri.to_s
   is_grc = item_uri.include?('/repositories/3')
   repo_key = is_grc ? 'grc' : 'scrc'
@@ -23,6 +24,13 @@
   
   base_url = AppConfig[:public_proxy_url].to_s.chomp('/')
   full_url = "#{base_url}#{result.uri}"
+
+  # Build the payload string
+  payload_raw = "Ref ID: #{item_ref_id}, Title: #{record_title}, Container: #{container_info.presence || 'Digital/No Physical Container'}, URL: #{full_url}"
+
+  # URL-encode the payload and construct the Drupal request URL (see config)
+  encoded_payload = ERB::Util.url_encode(payload_raw)
+  request_form_url = "#{t('gwu_custom.materials_request_url')}?details_string=#{encoded_payload}"
 %>
 
 <%# 2. HTML CONTENT %>
@@ -48,12 +56,9 @@
         <div class="col-md-4">
           <h3 class="access-title"><%= t('gwu_custom.facilitate_label') %></h3>
           <div class="access-well">
-            <input type="text" id="visible-barcode-text" value="Ref ID: <%= item_ref_id %>, Title: <%= record_title %>, Container: <%= container_info.presence || 'Digital/No Physical Container' %>, URL: <%= full_url %>">
-            </span>
+            <input type="text" id="visible-barcode-text" value="<%= payload_raw %>">
             
-            <div id="request-payload" style="display:none;">
-              Ref ID: <%= item_ref_id %>, Title: <%= record_title %>, Container: <%= container_info.presence || "Digital/No Physical Container" %>, URL: <%= full_url %>
-            </div>
+            <div id="request-payload" style="display:none;"><%= payload_raw %></div>
 
             <button type="button" id="copy-btn" class="btn btn-xs btn-default pull-right" title="Copy full details" style="border:none; background:transparent;">
               <i class="fa fa-copy"></i>
@@ -64,7 +69,7 @@
             <i class="fa fa-check"></i> Copied full details!
           </div>
           
-          <a href="<%= cfg[:contact_url] %>" class="btn btn-sm btn-primary access-btn-full">
+          <a href="<%= request_form_url %>" target="_blank" class="btn btn-sm btn-primary access-btn-full">
             <%= t('gwu_custom.request_btn_text', repo: cfg[:name]) %>
           </a>
         </div>

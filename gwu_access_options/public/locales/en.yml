@@ -1,5 +1,9 @@
 en:
   gwu_custom:
+  # Levels of description allowed to show the request panel (e.g., item, file, series)
+    allowed_levels:
+      - item
+      - file
     panel_title: "Access & Request Options"
     facilitate_label: "Request this Item:"
     visit_label: "Visit In-Person:"
@@ -14,6 +18,7 @@ en:
     schedule_btn_text: "Schedule Appointment"
     request_label: "Provide the following information:"
     request_default: "Consult Staff for assistance on this item."
+    materials_request_url: "https://test.library.gwu.edu/archivesspace-materials-request-form"
     status:
       online: "Available Online | Access digital content via the 'Go to file' link or thumbnail image above."
       restricted: "Digital Access Request Required | Digital content for this item is not available online. Please contact the repository to inquire about access possibilities."
