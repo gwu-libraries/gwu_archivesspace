@@ -35,6 +35,10 @@ en:
     notice_physical: "Reading room requests are fulfilled at the <strong>box level</strong>. Staff will retrieve this full container for your visit."
     notice_digital: "This item is a digital object. Contact repository staff for access or inquiry options."
 
+    request_btn_container_text: "Request %{type} %{indicator}"
+    request_btn_multi_text: "Request %{type} %{indicators}"
+    notice_multi_physical: "This item spans <strong>multiple containers</strong>. Submitting this request will page all listed physical boxes for your visit."
+
     status:
       online: "Available Online | Access digital content via the 'Go to file' link or thumbnail image above."
       restricted: "Digital Access Request Required | Digital content for this item is not available online. Please contact the repository to inquire about access possibilities."

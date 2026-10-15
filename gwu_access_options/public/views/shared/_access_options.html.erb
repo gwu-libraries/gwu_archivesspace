@@ -8,25 +8,47 @@
   
   item_ref_id = result.json['ref_id'] || "N/A"
 
-  # 1. Container Details Parsing
-  container_info = ""
-  con_type = ""
-  con_indicator = ""
-
+  # 1. Multi-Container Parsing
+  containers = []
   if result.json['instances']
-    instance = result.json['instances'].find { |inst| inst['sub_container'].present? }
-    if instance
-      top_con = instance.dig('sub_container', 'top_container', '_resolved')
-      if top_con
-        con_type = top_con['type']&.capitalize || 'Container'
-        con_indicator = top_con['indicator'].to_s
-        container_info = "#{con_type} #{con_indicator}"
-        container_info += " [Barcode: #{top_con['barcode']}]" if top_con['barcode'].present?
+    result.json['instances'].each do |inst|
+      if inst['sub_container'].present?
+        top_con = inst.dig('sub_container', 'top_container', '_resolved')
+        if top_con
+          c_type = top_con['type']&.capitalize || 'Container'
+          c_ind  = top_con['indicator'].to_s
+          c_bc   = top_con['barcode'].to_s
+
+          c_label = "#{c_type} #{c_ind}"
+          c_label += " [Barcode: #{c_bc}]" if c_bc.present?
+
+          containers << {
+            type: c_type,
+            indicator: c_ind,
+            barcode: c_bc,
+            label: c_label
+          }
+        end
       end
     end
   end
 
-  has_physical_container = container_info.present?
+  has_physical_container = containers.any?
+
+  # Format container strings for display and payload
+  container_info = containers.map { |c| c[:label] }.join('; ')
+
+  # Button label construction
+  if containers.size == 1
+    button_text = t('gwu_custom.request_btn_container_text', type: containers.first[:type], indicator: containers.first[:indicator])
+  elsif containers.size > 1
+    # Multi-container button display (e.g., "Request Boxes 1, 2")
+    indicators_list = containers.map { |c| c[:indicator] }.join(', ')
+    plural_type = containers.first[:type].pluralize
+    button_text = t('gwu_custom.request_btn_multi_text', type: plural_type, indicators: indicators_list, default: "Request #{plural_type} #{indicators_list}")
+  else
+    button_text = t('gwu_custom.request_btn_text', repo: cfg[:name])
+  end
 
   # 2. Extract Hierarchy via ArchivesSpace Breadcrumb Helper
   hierarchy_nodes = []
@@ -68,11 +90,11 @@
   elsif result.respond_to?(:identifier) && result.identifier.present?
     resource_id = result.identifier
   else
-    # Extract ID fallback? Not sure if this will work...
+    # Extract ID fallback
     resource_id = result.json.dig('resource', 'ref')&.split('/')&.last || "N/A"
   end
 
-  # Full hierarchy breadcrumb string (e.g. "Collection Name > Series I > Subseries A") No URIs, just the titles.
+  # Full hierarchy breadcrumb string
   full_hierarchy_path = hierarchy_nodes.join(" > ")
 
   has_online_content = result.json['representative_file_version'].present? || (dig.present? && dig.any? { |d| d['out'].present? })
@@ -112,7 +134,7 @@
         <div class="col-md-4">
           <h3 class="access-title"><%= t('gwu_custom.facilitate_label') %></h3>
           
-          <%# Target Badge Card (Adapts to Physical vs Digital) %>
+          <%# Target Badge Card (Adapts to Physical vs Digital and Single vs Multi Container) %>
           <div class="access-paging-card <%= has_physical_container ? 'card-physical' : 'card-digital' %>">
             <div class="paging-card-header">
               <%= has_physical_container ? t('gwu_custom.target_header_physical') : t('gwu_custom.target_header_digital') %>
@@ -120,7 +142,15 @@
             
             <div class="paging-card-target">
               <% if has_physical_container %>
-                <%= container_info %>
+                <% if containers.size > 1 %>
+                  <ul class="container-list" style="margin: 0; padding-left: 18px;">
+                    <% containers.each do |c| %>
+                      <li><%= c[:label] %></li>
+                    <% end %>
+                  </ul>
+                <% else %>
+                  <%= container_info %>
+                <% end %>
               <% else %>
                 <span class="digital-label"><%= t('gwu_custom.digital_only') %></span>
               <% end %>
@@ -134,7 +164,13 @@
 
           <%# Adaptive Reading Room Notice %>
           <p class="access-text-small access-notice">
-            <%= (has_physical_container ? t('gwu_custom.notice_physical') : t('gwu_custom.notice_digital')).html_safe %>
+            <% if has_physical_container && containers.size > 1 %>
+              <%= t('gwu_custom.notice_multi_physical', default: 'This item spans <strong>multiple containers</strong>. Submitting this request will page all listed physical boxes for your visit.').html_safe %>
+            <% elsif has_physical_container %>
+              <%= t('gwu_custom.notice_physical').html_safe %>
+            <% else %>
+              <%= t('gwu_custom.notice_digital').html_safe %>
+            <% end %>
           </p>
 
           <div class="access-well">
@@ -152,11 +188,7 @@
           </div>
           
           <a href="<%= request_form_url %>" target="_blank" class="btn btn-sm btn-primary access-btn-full access-btn-bold">
-            <% if has_physical_container %>
-              <%= t('gwu_custom.request_btn_container_text', type: con_type, indicator: con_indicator) %>
-            <% else %>
-              <%= t('gwu_custom.request_btn_text', repo: cfg[:name]) %>
-            <% end %>
+            <%= button_text %>
           </a>
         </div>
 
