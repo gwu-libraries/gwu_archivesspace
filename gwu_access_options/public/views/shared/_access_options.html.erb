@@ -4,7 +4,9 @@
   item_uri = result.uri.to_s
   is_grc = item_uri.include?('/repositories/3')
   repo_key = is_grc ? 'grc' : 'scrc'
-  repo_id = repo_key.upcase
+  
+  # Fetch repository code directly from result object (e.g., "SCRC", "GRC")
+  repo_code = result.respond_to?(:repository) && result.repository.present? ? result.repository.code : repo_key.upcase
   cfg = t("gwu_custom.repos.#{repo_key}", default: {})
   
   item_ref_id = result.json['ref_id'] || "N/A"
@@ -103,10 +105,10 @@
   base_url = AppConfig[:public_proxy_url].to_s.chomp('/')
   full_url = "#{base_url}#{result.uri}"
 
+  # Construct final payload string with Repo ID (code) appended
   res_label = resource_id.present? && resource_id != "N/A" ? "#{resource_title} (#{resource_id})" : resource_title
   
-  # final payload string
-  payload_raw = "Resource ID: #{resource_id} | Resource: #{res_label.presence || 'N/A'} | Hierarchy: #{full_hierarchy_path.presence || 'Root'} | Item: #{record_title} | Ref ID: #{item_ref_id} | Container: #{container_info.presence || 'Digital/No Physical Container'} | URL: #{full_url} | Repo ID: #{repo_id}"
+  payload_raw = "Resource ID: #{resource_id} | Resource: #{res_label.presence || 'N/A'} | Hierarchy: #{full_hierarchy_path.presence || 'Root'} | Item: #{record_title} | Ref ID: #{item_ref_id} | Container: #{container_info.presence || 'Digital/No Physical Container'} | URL: #{full_url} | Repo ID: #{repo_code}"
 
   encoded_payload = ERB::Util.url_encode(payload_raw)
   request_form_url = "#{t('gwu_custom.materials_request_url')}?details_string=#{encoded_payload}"
@@ -170,15 +172,8 @@
             <% end %>
           </p>
 
-          <div class="access-well">
-            <input type="text" id="visible-barcode-text" value="<%= payload_raw %>">
-            
-            <div id="request-payload" style="display:none;"><%= payload_raw %></div>
-
-            <button type="button" id="copy-btn" class="btn btn-xs btn-default pull-right" title="Copy full details">
-              Copy
-            </button>
-          </div>
+          <%# Hidden Payload Data Holder %>
+          <input type="hidden" id="visible-barcode-text" value="<%= payload_raw %>">
           
           <div id="copy-success" style="display:none;">
             <%= t('gwu_custom.details_copied') %>
