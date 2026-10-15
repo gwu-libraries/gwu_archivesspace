@@ -4,6 +4,7 @@
   item_uri = result.uri.to_s
   is_grc = item_uri.include?('/repositories/3')
   repo_key = is_grc ? 'grc' : 'scrc'
+  repo_id = repo_key.upcase
   cfg = t("gwu_custom.repos.#{repo_key}", default: {})
   
   item_ref_id = result.json['ref_id'] || "N/A"
@@ -102,10 +103,10 @@
   base_url = AppConfig[:public_proxy_url].to_s.chomp('/')
   full_url = "#{base_url}#{result.uri}"
 
-  # Construct final payload string
   res_label = resource_id.present? && resource_id != "N/A" ? "#{resource_title} (#{resource_id})" : resource_title
   
-  payload_raw = "Resource ID: #{resource_id} | Resource: #{res_label.presence || 'N/A'} | Hierarchy: #{full_hierarchy_path.presence || 'Root'} | Item: #{record_title} | Ref ID: #{item_ref_id} | Container: #{container_info.presence || 'Digital/No Physical Container'} | URL: #{full_url}"
+  # final payload string
+  payload_raw = "Resource ID: #{resource_id} | Resource: #{res_label.presence || 'N/A'} | Hierarchy: #{full_hierarchy_path.presence || 'Root'} | Item: #{record_title} | Ref ID: #{item_ref_id} | Container: #{container_info.presence || 'Digital/No Physical Container'} | URL: #{full_url} | Repo ID: #{repo_id}"
 
   encoded_payload = ERB::Util.url_encode(payload_raw)
   request_form_url = "#{t('gwu_custom.materials_request_url')}?details_string=#{encoded_payload}"
