@@ -39,27 +39,27 @@
     border-radius: 4px;
     padding: 10px 12px;
     margin-bottom: 10px;
+}
 
-    .paging-card-header {
-        font-size: 0.75em;
-        text-transform: uppercase;
-        font-weight: bold;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px;
-    }
+.access-paging-card .paging-card-header {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
 
-    .paging-card-target {
-        font-size: 1.15em;
-        font-weight: bold;
-        color: #111;
-    }
+.access-paging-card .paging-card-target {
+    font-size: 1.15em;
+    font-weight: bold;
+    color: #111;
+}
 
-    .paging-card-item {
-        font-size: 0.85em;
-        color: #495057;
-        margin-top: 6px;
-        padding-top: 6px;
-    }
+.access-paging-card .paging-card-item {
+    font-size: 0.85em;
+    color: #495057;
+    margin-top: 6px;
+    padding-top: 6px;
 }
 
 /* Input Well & Copy Payload */
@@ -72,39 +72,52 @@
     margin-bottom: 6px; 
     position: relative;
     padding: 10px;
-
-    #visible-barcode-text {
-        flex: 1;
-        border: none;
-        background-color: transparent;
-        font-size: 0.9rem;
-        color: #7b7b7b;
-
-        &:focus-visible {
-            outline: none;
-        }
-    }
-
-    > button#copy-btn {
-        padding-inline: 0.4rem 0.2rem;
-
-        &:focus {
-            box-shadow: none;
-        }
-    }
 }
 
+.access-well #visible-barcode-text {
+    flex: 1;
+    border: none;
+    background-color: transparent;
+    font-size: 0.9rem;
+    color: #7b7b7b;
+}
+
+.access-well #visible-barcode-text:focus-visible {
+    outline: none;
+}
+
+.access-well > button#copy-btn {
+    padding-inline: 0.4rem 0.2rem;
+}
+
+.access-well > button#copy-btn:focus {
+    box-shadow: none;
+}
+
+/* Success Message Alert */
 #copy-success {
-    color: #28a745;
-    font-size: 0.8em;
+    font-size: 0.85em;
     margin-bottom: 8px;
-    display: block;
+    padding: 6px 10px;
+    border-left: 4px solid #28a745;
+    background-color: #e8f5e9;
+    color: #1b5e20;
+    line-height: 1.35;
+    border-radius: 2px;
 }
 
+/* Button Normalization & Request Actions */
 .access-btn-full {
     width: 100%; 
     text-transform: uppercase;
+    display: block;
+    box-sizing: border-box;
 }
+
+.access-btn-bold {
+    font-weight: bold;
+}
+
 .access-btn-left {
     width: 100%; 
     margin-bottom: 8px; 
@@ -112,20 +125,46 @@
 }
 
 .access-request-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 8px;
 }
 
+/* Ensure <button> elements render identically to <a> link buttons */
 .access-request-actions .btn {
-  white-space: normal;
-  text-align: center;
+    white-space: normal;
+    text-align: center;
+    border-radius: 3px;
+    padding: 6px 12px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 
-#copy-success {
-  border-left: 4px solid #28a745;
-  background-color: #e8f5e9;
-  color: #1b5e20;
-  line-height: 1.35;
+/* Standardized Secondary Button (.btn-default) Styling */
+.access-request-actions button.btn-default,
+.access-request-actions a.btn-default {
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+}
+
+.access-request-actions button.btn-default:hover,
+.access-request-actions button.btn-default:focus,
+.access-request-actions a.btn-default:hover,
+.access-request-actions a.btn-default:focus {
+    color: #333;
+    background-color: #e6e6e6;
+    border-color: #adadad;
+    outline: none;
+}
+
+/* Dynamic Copied State */
+.access-request-actions button.btn-success {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
 }

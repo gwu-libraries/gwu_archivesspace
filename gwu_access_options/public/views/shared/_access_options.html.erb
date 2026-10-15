@@ -136,10 +136,6 @@
           
           <%# Target Badge Card (Adapts to Physical vs Digital and Single vs Multi Container) %>
           <div class="access-paging-card <%= has_physical_container ? 'card-physical' : 'card-digital' %>">
-            <div class="paging-card-header">
-              <%= has_physical_container ? t('gwu_custom.target_header_physical') : t('gwu_custom.target_header_digital') %>
-            </div>
-            
             <div class="paging-card-target">
               <% if has_physical_container %>
                 <% if containers.size > 1 %>
