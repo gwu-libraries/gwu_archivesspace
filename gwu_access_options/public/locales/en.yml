@@ -22,7 +22,7 @@ en:
     materials_request_url: "https://test.library.gwu.edu/archivesspace-materials-request-form"
     
     # UI LAbells
-    details_copied: "Copied full details!"
+    details_copied: "Copied full details! Please paste into your existing request form."
     digital_only: "Digital / No Physical Container"
     
     # Card Headings & Context Labels
