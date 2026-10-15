@@ -187,9 +187,16 @@
             <%= t('gwu_custom.details_copied') %>
           </div>
           
-          <a href="<%= request_form_url %>" target="_blank" class="btn btn-sm btn-primary access-btn-full access-btn-bold">
-            <%= button_text %>
-          </a>
+          <%# Twin Request Action Buttons %>
+          <div class="access-request-actions">
+            <a href="<%= request_form_url %>" target="_blank" class="btn btn-sm btn-primary access-btn-full access-btn-bold mb-2">
+              <%= button_text %> (Start New Request)
+            </a>
+
+            <button type="button" id="add-to-existing-btn" class="btn btn-sm btn-default access-btn-full access-btn-bold">
+              Add to Existing Request
+            </button>
+          </div>
         </div>
 
         <%# Column 2: Visit %>

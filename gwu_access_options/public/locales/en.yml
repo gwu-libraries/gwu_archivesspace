@@ -26,7 +26,6 @@ en:
     digital_only: "Digital / No Physical Container"
     
     # Card Headings & Context Labels
-    target_header_physical: "Physical Target to be Paged"
     target_header_digital: "Digital Object / Online Resource"
     includes_item_physical: "Includes requested item:"
     includes_item_digital: "Requested Item:"
