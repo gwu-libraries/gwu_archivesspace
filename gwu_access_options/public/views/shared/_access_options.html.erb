@@ -8,27 +8,77 @@
   
   item_ref_id = result.json['ref_id'] || "N/A"
 
+  # 1. Container Details Parsing
   container_info = ""
   if result.json['instances']
-    instance = result.json['instances'].find {|inst| inst['sub_container'].present? }
+    instance = result.json['instances'].find { |inst| inst['sub_container'].present? }
     if instance
       top_con = instance.dig('sub_container', 'top_container', '_resolved')
       if top_con
-        container_info = "#{top_con['type']&.capitalize} #{top_con['indicator']}"
+        con_type = top_con['type']&.capitalize || 'Container'
+        container_info = "#{con_type} #{top_con['indicator']}"
         container_info += " [Barcode: #{top_con['barcode']}]" if top_con['barcode'].present?
       end
     end
   end
+
+  # 2. Extract Hierarchy via ArchivesSpace Breadcrumb Helper
+  hierarchy_nodes = []
+  resource_title = ""
+  resource_id = ""
+
+  if result.respond_to?(:breadcrumb) && result.breadcrumb.present?
+    # result.breadcrumb returns an array of hashes: [{:crumb => "Title", :uri => "...", :type => "..."}]
+    hierarchy_nodes = result.breadcrumb.map do |crumb|
+      # Strip HTML tags/markup from titles
+      ActionView::Base.full_sanitizer.sanitize(crumb[:crumb]).to_s.strip
+    end.compact.reject(&:empty?)
+
+    resource_title = hierarchy_nodes.first || ""
+  elsif result.respond_to?(:ancestors) && result.ancestors.present?
+    # Fallback to ancestors array if breadcrumb helper isn't directly bound
+    hierarchy_nodes = result.ancestors.map do |anc|
+      title = anc['title'] || anc['_resolved']&.fetch('title', nil)
+      ActionView::Base.full_sanitizer.sanitize(title).to_s.strip if title.present?
+    end.compact.reject(&:empty?).reverse
+    
+    resource_title = hierarchy_nodes.first || ""
+  end
+
+  # Fallback to direct JSON traversal if hierarchy is still empty
+  if hierarchy_nodes.empty? && result.json['ancestors'].present?
+    result.json['ancestors'].each do |anc|
+      title = anc['_resolved']&.fetch('title', nil) || anc['title']
+      hierarchy_nodes << ActionView::Base.full_sanitizer.sanitize(title).to_s.strip if title.present?
+    end
+    hierarchy_nodes.reverse!
+    resource_title = hierarchy_nodes.first || ""
+  end
+
+  # 3. Extract Resource Identifier
+  if result.respond_to?(:resolved_resource) && result.resolved_resource.present?
+    res = result.resolved_resource
+    resource_id = res['identifier'] || [res['id_0'], res['id_1'], res['id_2'], res['id_3']].compact.join('-')
+  elsif result.respond_to?(:identifier) && result.identifier.present?
+    resource_id = result.identifier
+  else
+    # Extract ID fallback? Not sure if this will work...but I think it pulls the SOLR id?
+    resource_id = result.json.dig('resource', 'ref')&.split('/')&.last || "N/A"
+  end
+
+  # Full hierarchy breadcrumb string (e.g. "Collection Name > Series I > Subseries A") No URIs, just the titles.
+  full_hierarchy_path = hierarchy_nodes.join(" > ")
 
   has_online_content = result.json['representative_file_version'].present? || (dig.present? && dig.any? { |d| d['out'].present? })
   
   base_url = AppConfig[:public_proxy_url].to_s.chomp('/')
   full_url = "#{base_url}#{result.uri}"
 
-  # Build the payload string
-  payload_raw = "Ref ID: #{item_ref_id}, Title: #{record_title}, Container: #{container_info.presence || 'Digital/No Physical Container'}, URL: #{full_url}"
+  # Construct final payload string
+  res_label = resource_id.present? && resource_id != "N/A" ? "#{resource_title} (#{resource_id})" : resource_title
+  
+  payload_raw = "Resource ID: #{resource_id} | Resource: #{res_label.presence || 'N/A'} | Hierarchy: #{full_hierarchy_path.presence || 'Root'} | Item: #{record_title} | Ref ID: #{item_ref_id} | Container: #{container_info.presence || 'Digital/No Physical Container'} | URL: #{full_url}"
 
-  # URL-encode the payload and construct the Drupal request URL (see config)
   encoded_payload = ERB::Util.url_encode(payload_raw)
   request_form_url = "#{t('gwu_custom.materials_request_url')}?details_string=#{encoded_payload}"
 %>
