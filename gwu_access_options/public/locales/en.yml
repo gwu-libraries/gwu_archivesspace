@@ -1,6 +1,6 @@
 en:
   gwu_custom:
-  # Levels of description allowed to show the request panel (e.g., item, file, series)
+    # Levels of description allowed to show the request panel (e.g., item, file, series)
     allowed_levels:
       - item
       - file
@@ -12,6 +12,7 @@ en:
     copyright_link_text: "Reproductions, Citations, and Copyright"
     copyright_url: "https://library.gwu.edu/reproductions-citations-copyright"
     request_btn_text: "Send %{repo} a Message to Request"
+    request_btn_container_text: "Request %{type} %{indicator}"
     consult_title: "Talk to an Archivist"
     consult_text: "Have a question or need help with your research? We are happy to assist you."
     message_btn_text: "Send a Message"
@@ -19,6 +20,21 @@ en:
     request_label: "Provide the following information:"
     request_default: "Consult Staff for assistance on this item."
     materials_request_url: "https://test.library.gwu.edu/archivesspace-materials-request-form"
+    
+    # UI LAbells
+    details_copied: "Copied full details!"
+    digital_only: "Digital / No Physical Container"
+    
+    # Card Headings & Context Labels
+    target_header_physical: "Physical Target to be Paged"
+    target_header_digital: "Digital Object / Online Resource"
+    includes_item_physical: "Includes requested item:"
+    includes_item_digital: "Requested Item:"
+    
+    # Explanatory Reading Room Notices
+    notice_physical: "Reading room requests are fulfilled at the <strong>box level</strong>. Staff will retrieve this full container for your visit."
+    notice_digital: "This item is a digital object. Contact repository staff for access or inquiry options."
+
     status:
       online: "Available Online | Access digital content via the 'Go to file' link or thumbnail image above."
       restricted: "Digital Access Request Required | Digital content for this item is not available online. Please contact the repository to inquire about access possibilities."

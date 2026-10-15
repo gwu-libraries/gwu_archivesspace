@@ -10,17 +10,23 @@
 
   # 1. Container Details Parsing
   container_info = ""
+  con_type = ""
+  con_indicator = ""
+
   if result.json['instances']
     instance = result.json['instances'].find { |inst| inst['sub_container'].present? }
     if instance
       top_con = instance.dig('sub_container', 'top_container', '_resolved')
       if top_con
         con_type = top_con['type']&.capitalize || 'Container'
-        container_info = "#{con_type} #{top_con['indicator']}"
+        con_indicator = top_con['indicator'].to_s
+        container_info = "#{con_type} #{con_indicator}"
         container_info += " [Barcode: #{top_con['barcode']}]" if top_con['barcode'].present?
       end
     end
   end
+
+  has_physical_container = container_info.present?
 
   # 2. Extract Hierarchy via ArchivesSpace Breadcrumb Helper
   hierarchy_nodes = []
@@ -62,7 +68,7 @@
   elsif result.respond_to?(:identifier) && result.identifier.present?
     resource_id = result.identifier
   else
-    # Extract ID fallback? Not sure if this will work...but I think it pulls the SOLR id?
+    # Extract ID fallback? Not sure if this will work...
     resource_id = result.json.dig('resource', 'ref')&.split('/')&.last || "N/A"
   end
 
@@ -91,36 +97,66 @@
       <%# Status Alert Area %>
       <div class="alert access-alert <%= has_online_content ? 'alert-info' : 'access-alert-warning' %>">
         <% if has_online_content %> 
-          <i class="fa fa-cloud-download"></i> <%= t('gwu_custom.status.online') %>
+          <%= t('gwu_custom.status.online') %>
         <% elsif dig.present? %> 
-          <i class="fa fa-comments-o"></i> <strong><%= t('gwu_custom.status.restricted') %></strong>
+          <strong><%= t('gwu_custom.status.restricted') %></strong>
         <% else %> 
-          <i class="fa fa-info-circle"></i> <strong><%= t('gwu_custom.status.default') %></strong>
+          <strong><%= t('gwu_custom.status.default') %></strong>
         <% end %>
       </div>
 
       <%# Start of the Row for Columns %>
       <div class="row">
         
-        <%# Column 1: Facilitate/Request %>
+        <%# Column 1: Request Box %>
         <div class="col-md-4">
           <h3 class="access-title"><%= t('gwu_custom.facilitate_label') %></h3>
+          
+          <%# Target Badge Card (Adapts to Physical vs Digital) %>
+          <div class="access-paging-card <%= has_physical_container ? 'card-physical' : 'card-digital' %>">
+            <div class="paging-card-header">
+              <%= has_physical_container ? t('gwu_custom.target_header_physical') : t('gwu_custom.target_header_digital') %>
+            </div>
+            
+            <div class="paging-card-target">
+              <% if has_physical_container %>
+                <%= container_info %>
+              <% else %>
+                <span class="digital-label"><%= t('gwu_custom.digital_only') %></span>
+              <% end %>
+            </div>
+
+            <div class="paging-card-item">
+              <strong><%= has_physical_container ? t('gwu_custom.includes_item_physical') : t('gwu_custom.includes_item_digital') %></strong><br>
+              <span class="item-title-text"><%= record_title %></span>
+            </div>
+          </div>
+
+          <%# Adaptive Reading Room Notice %>
+          <p class="access-text-small access-notice">
+            <%= (has_physical_container ? t('gwu_custom.notice_physical') : t('gwu_custom.notice_digital')).html_safe %>
+          </p>
+
           <div class="access-well">
             <input type="text" id="visible-barcode-text" value="<%= payload_raw %>">
             
             <div id="request-payload" style="display:none;"><%= payload_raw %></div>
 
-            <button type="button" id="copy-btn" class="btn btn-xs btn-default pull-right" title="Copy full details" style="border:none; background:transparent;">
-              <i class="fa fa-copy"></i>
+            <button type="button" id="copy-btn" class="btn btn-xs btn-default pull-right" title="Copy full details">
+              Copy
             </button>
           </div>
           
-          <div id="copy-success" style="display:none; color: #28a745; font-size: 0.8em; margin-bottom: 5px;">
-            <i class="fa fa-check"></i> Copied full details!
+          <div id="copy-success" style="display:none;">
+            <%= t('gwu_custom.details_copied') %>
           </div>
           
-          <a href="<%= request_form_url %>" target="_blank" class="btn btn-sm btn-primary access-btn-full">
-            <%= t('gwu_custom.request_btn_text', repo: cfg[:name]) %>
+          <a href="<%= request_form_url %>" target="_blank" class="btn btn-sm btn-primary access-btn-full access-btn-bold">
+            <% if has_physical_container %>
+              <%= t('gwu_custom.request_btn_container_text', type: con_type, indicator: con_indicator) %>
+            <% else %>
+              <%= t('gwu_custom.request_btn_text', repo: cfg[:name]) %>
+            <% end %>
           </a>
         </div>
 
@@ -129,10 +165,10 @@
           <h3 class="access-title"><%= t('gwu_custom.visit_label') %></h3>
           <p class="access-text-small"><%= t('gwu_custom.visit_text_preview') %></p>
           <a href="<%= cfg[:visit_url] %>" target="_blank" class="btn btn-sm btn-default access-btn-left">
-            <i class="fa fa-external-link"></i> <%= t('gwu_custom.visit_link_text') %>
+            <%= t('gwu_custom.visit_link_text') %>
           </a>
           <a href="<%= t('gwu_custom.copyright_url') %>" target="_blank" class="btn btn-sm btn-default access-btn-left">
-            <i class="fa fa-external-link"></i> <%= t('gwu_custom.copyright_link_text') %>
+            <%= t('gwu_custom.copyright_link_text') %>
           </a>
         </div>
 
@@ -141,7 +177,7 @@
           <h3 class="access-title"><%= t('gwu_custom.consult_title') %></h3>
           <p class="access-text-small"><%= t('gwu_custom.consult_text') %></p>
           <a href="<%= cfg[:contact_url] %>" class="btn btn-sm btn-default access-btn-left">
-            <i class="fa fa-envelope-o"></i> <%= t('gwu_custom.message_btn_text') %>
+            <%= t('gwu_custom.message_btn_text') %>
           </a>
         </div>
 

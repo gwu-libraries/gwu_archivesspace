@@ -11,7 +11,7 @@
     border-left: 1px solid #eee;
 }
 
-/* Alert Styling? */
+/* Alert Styling */
 .access-alert {
     margin-bottom: 20px; 
     border-radius: 0; 
@@ -23,7 +23,7 @@
     border-color: #ffeeba;
 }
 
-/* Typography stuff */
+/* Typography & Labels */
 .access-title {
     margin-top: 0; 
     font-size: 1.1em; 
@@ -33,41 +33,72 @@
     font-size: 0.9em; 
     min-height: 40px;
 }
+
+/* Physical Container Paging Card */
+.access-paging-card {
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+
+    .paging-card-header {
+        font-size: 0.75em;
+        text-transform: uppercase;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .paging-card-target {
+        font-size: 1.15em;
+        font-weight: bold;
+        color: #111;
+    }
+
+    .paging-card-item {
+        font-size: 0.85em;
+        color: #495057;
+        margin-top: 6px;
+        padding-top: 6px;
+    }
+}
+
+/* Input Well & Copy Payload */
 .access-well {
     display: flex;
     background: #f8f9fa; 
     border: 1px solid #ddd; 
     border-radius: 0; 
     box-shadow: none; 
-    margin-bottom: 10px; 
+    margin-bottom: 6px; 
     position: relative;
     padding: 10px;
 
     #visible-barcode-text {
-      flex: 1;
-      border: none;
-      background-color: transparent;
-      font-size: 0.9rem;
-      color: #7b7b7b;
+        flex: 1;
+        border: none;
+        background-color: transparent;
+        font-size: 0.9rem;
+        color: #7b7b7b;
 
-      &:focus-visible {
-        outline: none;
-      }
+        &:focus-visible {
+            outline: none;
+        }
     }
 
     > button#copy-btn {
-      padding-inline: 0.4rem 0.2rem;
+        padding-inline: 0.4rem 0.2rem;
 
-      &:focus {
-        box-shadow: none;
-      }
+        &:focus {
+            box-shadow: none;
+        }
     }
 }
 
 #copy-success {
-  position: absolute;
-  top: 0;
-  right: 15px;
+    color: #28a745;
+    font-size: 0.8em;
+    margin-bottom: 8px;
+    display: block;
 }
 
 .access-btn-full {
