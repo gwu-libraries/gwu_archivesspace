@@ -28,7 +28,7 @@ Neither of these plugins are required for a dev instance. Though you may want to
 
 ## Deployment & Docker Instructions
 
-For general details on running ArchivesSpace with Docker, refer to the [official ArchivesSpace Docker documentation](https://docs.archivesspace.org/administration/docker/).
+For general details on running ArchivesSpace with Docker, refer to the [official ArchivesSpace Docker documentation](https://docs.archivesspace.org/administration/docker/). You may also reference the official help page related to [plugins](https://docs.archivesspace.org/customization/plugins/)
 
 ### Drop plugins into ArchivesSpace
 Clone this repository directly into your local or development ArchivesSpace `plugins` directory.
