@@ -1,12 +1,21 @@
 $(function () {
 
-  $(document).on('click', '#copy-btn', function () {
-    const textToCopy = $('#request-payload').text();
+  // Event handler for both "Add to Existing Request" and legacy copy button
+  $(document).on('click', '#add-to-existing-btn, #copy-btn', function (e) {
+    e.preventDefault();
+    
+    // 1. Fetch value directly from the visible text input element (.val())
+    let textToCopy = $('#visible-barcode-text').val();
+    
+    // 2. Fallback to hidden container if input field is unavailable
+    if (!textToCopy) {
+      textToCopy = $('#request-payload').text().trim();
+    }
 
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(textToCopy).then(showSuccess);
     } else {
-      // Fallback for older browsers
+      // Fallback for non-HTTPS or legacy browser environments
       const textArea = document.createElement("textarea");
       textArea.value = textToCopy;
       document.body.appendChild(textArea);
@@ -19,11 +28,19 @@ $(function () {
 
   function showSuccess() {
     const $msg = $("#copy-success");
-    const $icon = $('.access-well #copy-btn > i')
-    $msg.fadeIn().delay(2500).fadeOut();
-    $icon.toggleClass('fa-copy fa-check');
-    setTimeout(() => {
-      $icon.toggleClass('fa-copy fa-check');
-    }, 3000);
+    const $btn = $('#add-to-existing-btn');
+
+    // Reveal inline success feedback message
+    $msg.stop(true, true).fadeIn().delay(4000).fadeOut();
+
+    // Momentary visual state update on button
+    if ($btn.length) {
+      const originalText = $btn.text();
+      $btn.addClass('btn-success').removeClass('btn-default').text('Copied to Clipboard!');
+
+      setTimeout(function () {
+        $btn.removeClass('btn-success').addClass('btn-default').text(originalText);
+      }, 2500);
+    }
   }
 });

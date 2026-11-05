@@ -4,31 +4,112 @@
   item_uri = result.uri.to_s
   is_grc = item_uri.include?('/repositories/3')
   repo_key = is_grc ? 'grc' : 'scrc'
+  
+  # Fetch repository code directly from result object (e.g., "SCRC", "GRC")
+  repo_code = result.respond_to?(:repository) && result.repository.present? ? result.repository.code : repo_key.upcase
   cfg = t("gwu_custom.repos.#{repo_key}", default: {})
   
   item_ref_id = result.json['ref_id'] || "N/A"
 
-  container_info = ""
+  # 1. Multi-Container Parsing
+  containers = []
   if result.json['instances']
-    instance = result.json['instances'].find {|inst| inst['sub_container'].present? }
-    if instance
-      top_con = instance.dig('sub_container', 'top_container', '_resolved')
-      if top_con
-        container_info = "#{top_con['type']&.capitalize} #{top_con['indicator']}"
-        container_info += " [Barcode: #{top_con['barcode']}]" if top_con['barcode'].present?
+    result.json['instances'].each do |inst|
+      if inst['sub_container'].present?
+        top_con = inst.dig('sub_container', 'top_container', '_resolved')
+        if top_con
+          c_type = top_con['type']&.capitalize || 'Container'
+          c_ind  = top_con['indicator'].to_s
+          c_bc   = top_con['barcode'].to_s
+
+          c_label = "#{c_type} #{c_ind}"
+          c_label += " [Barcode: #{c_bc}]" if c_bc.present?
+
+          containers << {
+            type: c_type,
+            indicator: c_ind,
+            barcode: c_bc,
+            label: c_label
+          }
+        end
       end
     end
   end
+
+  has_physical_container = containers.any?
+
+  # Format container strings for display and payload
+  container_info = containers.map { |c| c[:label] }.join('; ')
+
+  # Button label construction
+  if containers.size == 1
+    button_text = t('gwu_custom.request_btn_container_text', type: containers.first[:type], indicator: containers.first[:indicator])
+  elsif containers.size > 1
+    # Multi-container button display (e.g., "Request Boxes 1, 2")
+    indicators_list = containers.map { |c| c[:indicator] }.join(', ')
+    plural_type = containers.first[:type].pluralize
+    button_text = t('gwu_custom.request_btn_multi_text', type: plural_type, indicators: indicators_list, default: "Request #{plural_type} #{indicators_list}")
+  else
+    button_text = t('gwu_custom.request_btn_text', repo: cfg[:name])
+  end
+
+  # 2. Extract Hierarchy via ArchivesSpace Breadcrumb Helper
+  hierarchy_nodes = []
+  resource_title = ""
+  resource_id = ""
+
+  if result.respond_to?(:breadcrumb) && result.breadcrumb.present?
+    # result.breadcrumb returns an array of hashes: [{:crumb => "Title", :uri => "...", :type => "..."}]
+    hierarchy_nodes = result.breadcrumb.map do |crumb|
+      # Strip HTML tags/markup from titles
+      ActionView::Base.full_sanitizer.sanitize(crumb[:crumb]).to_s.strip
+    end.compact.reject(&:empty?)
+
+    resource_title = hierarchy_nodes.first || ""
+  elsif result.respond_to?(:ancestors) && result.ancestors.present?
+    # Fallback to ancestors array if breadcrumb helper isn't directly bound
+    hierarchy_nodes = result.ancestors.map do |anc|
+      title = anc['title'] || anc['_resolved']&.fetch('title', nil)
+      ActionView::Base.full_sanitizer.sanitize(title).to_s.strip if title.present?
+    end.compact.reject(&:empty?).reverse
+    
+    resource_title = hierarchy_nodes.first || ""
+  end
+
+  # Fallback to direct JSON traversal if hierarchy is still empty
+  if hierarchy_nodes.empty? && result.json['ancestors'].present?
+    result.json['ancestors'].each do |anc|
+      title = anc['_resolved']&.fetch('title', nil) || anc['title']
+      hierarchy_nodes << ActionView::Base.full_sanitizer.sanitize(title).to_s.strip if title.present?
+    end
+    hierarchy_nodes.reverse!
+    resource_title = hierarchy_nodes.first || ""
+  end
+
+  # 3. Extract Resource Identifier
+  if result.respond_to?(:resolved_resource) && result.resolved_resource.present?
+    res = result.resolved_resource
+    resource_id = res['identifier'] || [res['id_0'], res['id_1'], res['id_2'], res['id_3']].compact.join('-')
+  elsif result.respond_to?(:identifier) && result.identifier.present?
+    resource_id = result.identifier
+  else
+    # Extract ID fallback
+    resource_id = result.json.dig('resource', 'ref')&.split('/')&.last || "N/A"
+  end
+
+  # Full hierarchy breadcrumb string
+  full_hierarchy_path = hierarchy_nodes.join(" > ")
 
   has_online_content = result.json['representative_file_version'].present? || (dig.present? && dig.any? { |d| d['out'].present? })
   
   base_url = AppConfig[:public_proxy_url].to_s.chomp('/')
   full_url = "#{base_url}#{result.uri}"
 
-  # Build the payload string
-  payload_raw = "Ref ID: #{item_ref_id}, Title: #{record_title}, Container: #{container_info.presence || 'Digital/No Physical Container'}, URL: #{full_url}"
+  # Construct final payload string with Repo ID (code) appended
+  res_label = resource_id.present? && resource_id != "N/A" ? "#{resource_title} (#{resource_id})" : resource_title
+  
+  payload_raw = "Resource ID: #{resource_id} | Resource: #{res_label.presence || 'N/A'} | Hierarchy: #{full_hierarchy_path.presence || 'Root'} | Item: #{record_title} | Ref ID: #{item_ref_id} | Container: #{container_info.presence || 'Digital/No Physical Container'} | URL: #{full_url} | Repo ID: #{repo_code}"
 
-  # URL-encode the payload and construct the Drupal request URL (see config)
   encoded_payload = ERB::Util.url_encode(payload_raw)
   request_form_url = "#{t('gwu_custom.materials_request_url')}?details_string=#{encoded_payload}"
 %>
@@ -41,37 +122,73 @@
       <%# Status Alert Area %>
       <div class="alert access-alert <%= has_online_content ? 'alert-info' : 'access-alert-warning' %>">
         <% if has_online_content %> 
-          <i class="fa fa-cloud-download"></i> <%= t('gwu_custom.status.online') %>
+          <%= t('gwu_custom.status.online') %>
         <% elsif dig.present? %> 
-          <i class="fa fa-comments-o"></i> <strong><%= t('gwu_custom.status.restricted') %></strong>
+          <strong><%= t('gwu_custom.status.restricted') %></strong>
         <% else %> 
-          <i class="fa fa-info-circle"></i> <strong><%= t('gwu_custom.status.default') %></strong>
+          <strong><%= t('gwu_custom.status.default') %></strong>
         <% end %>
       </div>
 
       <%# Start of the Row for Columns %>
       <div class="row">
         
-        <%# Column 1: Facilitate/Request %>
+        <%# Column 1: Request Box %>
         <div class="col-md-4">
           <h3 class="access-title"><%= t('gwu_custom.facilitate_label') %></h3>
-          <div class="access-well">
-            <input type="text" id="visible-barcode-text" value="<%= payload_raw %>">
-            
-            <div id="request-payload" style="display:none;"><%= payload_raw %></div>
+          
+          <%# Target Badge Card (Adapts to Physical vs Digital and Single vs Multi Container) %>
+          <div class="access-paging-card <%= has_physical_container ? 'card-physical' : 'card-digital' %>">
+            <div class="paging-card-target">
+              <% if has_physical_container %>
+                <% if containers.size > 1 %>
+                  <ul class="container-list" style="margin: 0; padding-left: 18px;">
+                    <% containers.each do |c| %>
+                      <li><%= c[:label] %></li>
+                    <% end %>
+                  </ul>
+                <% else %>
+                  <%= container_info %>
+                <% end %>
+              <% else %>
+                <span class="digital-label"><%= t('gwu_custom.digital_only') %></span>
+              <% end %>
+            </div>
 
-            <button type="button" id="copy-btn" class="btn btn-xs btn-default pull-right" title="Copy full details" style="border:none; background:transparent;">
-              <i class="fa fa-copy"></i>
+            <div class="paging-card-item">
+              <strong><%= has_physical_container ? t('gwu_custom.includes_item_physical') : t('gwu_custom.includes_item_digital') %></strong><br>
+              <span class="item-title-text"><%= record_title %></span>
+            </div>
+          </div>
+
+          <%# Adaptive Reading Room Notice %>
+          <p class="access-text-small access-notice">
+            <% if has_physical_container && containers.size > 1 %>
+              <%= t('gwu_custom.notice_multi_physical', default: 'This item spans <strong>multiple containers</strong>. Submitting this request will page all listed physical boxes for your visit.').html_safe %>
+            <% elsif has_physical_container %>
+              <%= t('gwu_custom.notice_physical').html_safe %>
+            <% else %>
+              <%= t('gwu_custom.notice_digital').html_safe %>
+            <% end %>
+          </p>
+
+          <%# Hidden Payload Data Holder %>
+          <input type="hidden" id="visible-barcode-text" value="<%= payload_raw %>">
+          
+          <div id="copy-success" style="display:none;">
+            <%= t('gwu_custom.details_copied') %>
+          </div>
+          
+          <%# Twin Request Action Buttons %>
+          <div class="access-request-actions">
+            <a href="<%= request_form_url %>" target="_blank" class="btn btn-sm btn-primary access-btn-full access-btn-bold mb-2">
+              <%= button_text %> (Start New Request)
+            </a>
+
+            <button type="button" id="add-to-existing-btn" class="btn btn-sm btn-default access-btn-full access-btn-bold">
+              Add to Existing Request
             </button>
           </div>
-          
-          <div id="copy-success" style="display:none; color: #28a745; font-size: 0.8em; margin-bottom: 5px;">
-            <i class="fa fa-check"></i> Copied full details!
-          </div>
-          
-          <a href="<%= request_form_url %>" target="_blank" class="btn btn-sm btn-primary access-btn-full">
-            <%= t('gwu_custom.request_btn_text', repo: cfg[:name]) %>
-          </a>
         </div>
 
         <%# Column 2: Visit %>
@@ -79,10 +196,10 @@
           <h3 class="access-title"><%= t('gwu_custom.visit_label') %></h3>
           <p class="access-text-small"><%= t('gwu_custom.visit_text_preview') %></p>
           <a href="<%= cfg[:visit_url] %>" target="_blank" class="btn btn-sm btn-default access-btn-left">
-            <i class="fa fa-external-link"></i> <%= t('gwu_custom.visit_link_text') %>
+            <%= t('gwu_custom.visit_link_text') %>
           </a>
           <a href="<%= t('gwu_custom.copyright_url') %>" target="_blank" class="btn btn-sm btn-default access-btn-left">
-            <i class="fa fa-external-link"></i> <%= t('gwu_custom.copyright_link_text') %>
+            <%= t('gwu_custom.copyright_link_text') %>
           </a>
         </div>
 
@@ -91,7 +208,7 @@
           <h3 class="access-title"><%= t('gwu_custom.consult_title') %></h3>
           <p class="access-text-small"><%= t('gwu_custom.consult_text') %></p>
           <a href="<%= cfg[:contact_url] %>" class="btn btn-sm btn-default access-btn-left">
-            <i class="fa fa-envelope-o"></i> <%= t('gwu_custom.message_btn_text') %>
+            <%= t('gwu_custom.message_btn_text') %>
           </a>
         </div>
 
